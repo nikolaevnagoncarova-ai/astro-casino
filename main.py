@@ -4,7 +4,12 @@ from fastapi import FastAPI, Request
 from aiogram import Bot, Dispatcher, types
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from config import settings
+class Settings:
+    bot_token = os.getenv("BOT_TOKEN")
+    webhook_url = os.getenv("RENDER_EXTERNAL_URL", "")
+
+settings = Settings()
+
 from database import engine
 from models import Base
 
