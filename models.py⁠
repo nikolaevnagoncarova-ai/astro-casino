@@ -1,0 +1,32 @@
+from sqlalchemy import Column, Integer, String, BigInteger, Boolean, Float, ForeignKey, DateTime
+from sqlalchemy.orm import declarative_base
+import datetime
+
+Base = declarative_base()
+
+class User(Base):
+    __tablename__ = "users"
+    
+    id = Column(BigInteger, primary_key=True, index=True)
+    username = Column(String, nullable=True)
+    balance = Column(BigInteger, default=5000)
+    xp = Column(Integer, default=0)
+    level = Column(Integer, default=1)
+    streak = Column(Integer, default=0)
+    games_played = Column(Integer, default=0)
+    wins = Column(Integer, default=0)
+    losses = Column(Integer, default=0)
+    total_won = Column(BigInteger, default=0)
+    total_lost = Column(BigInteger, default=0)
+    max_win = Column(BigInteger, default=0)
+    vip_level = Column(Integer, default=0)
+
+class Transaction(Base):
+    __tablename__ = "transactions"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(BigInteger, ForeignKey("users.id"))
+    amount = Column(BigInteger)
+    type = Column(String)
+    description = Column(String)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
