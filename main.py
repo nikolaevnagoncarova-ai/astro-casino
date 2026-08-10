@@ -21,6 +21,10 @@ WEBHOOK_URL = os.getenv("RENDER_EXTERNAL_URL", "")
 app = FastAPI()
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML)) if BOT_TOKEN else None
 dp = Dispatcher()
+@dp.message(lambda message: message.text == "/start")
+async def cmd_start(message: types.Message):
+    await message.answer("Привет! Бот успешно запущен и работает! 🚀")
+
 
 @app.on_event("startup")
 async def on_startup():
