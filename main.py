@@ -18,6 +18,7 @@ Base = declarative_base()
 # Настройки
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 WEBHOOK_URL = os.getenv("RENDER_EXTERNAL_URL", "")
+app = FastAPI()
 
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
