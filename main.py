@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from aiogram import Bot, Dispatcher, types
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
@@ -18,12 +19,23 @@ Base = declarative_base()
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 WEBHOOK_URL = os.getenv("RENDER_EXTERNAL_URL", "")
 
-app = FastAPI()
-bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML)) if BOT_TOKEN else None
+bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
+
 @dp.message(lambda message: message.text == "/start")
 async def cmd_start(message: types.Message):
-    await message.answer("Привет! Бот успешно запущен и работает! 🚀")
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🎰 Крутить слоты", callback_data="play_slots")],
+        [InlineKeyboardButton(text="👤 Личный кабинет", callback_data="profile")]
+    ])
+    await message.answer(
+        "✨ <b>Добро пожаловать в Astro Casino</b>\n\n"
+        "Элегантная атмосфера, высокие ставки и чистый азарт. "
+        "Здесь звезды сходятся в твою пользу, а расчет и удача идут рука об руку.\n\n",
+        "👇 Выберите раздел для начала игры:",
+        reply_markup=keyboard
+    )
+
 
 
 @app.on_event("startup")
