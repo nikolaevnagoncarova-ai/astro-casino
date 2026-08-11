@@ -1,43 +1,32 @@
-import sys, os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-import asyncio
+import os
 from fastapi import FastAPI, Request
 from aiogram import Bot, Dispatcher, types
-from aiogram.client.default import DefaultBotProperties
-from aiogram.enums import ParseMode
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from aiogram.fsm.storage.memory import MemoryStorage
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import BigInteger, Integer
 
-# База данных прямо здесь
-DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+TOKEN = os.getenv("BOT_TOKEN")
+WEBHOOK_URL = os.getenv("RENDER_EXTERNAL_URL")
+
+bot = Bot(token=TOKEN)
+dp = Dispatcher(storage=MemoryStorage())
+
+# База данных
+DATABASE_URL = "sqlite+aiosqlite:///database.db"
 engine = create_async_engine(DATABASE_URL, echo=True)
-Base = declarative_base()
+async_session = async_sessionmaker(engine, expire_on_commit=False)
 
-# Настройки
-BOT_TOKEN = os.getenv("BOT_TOKEN", "")
-WEBHOOK_URL = os.getenv("RENDER_EXTERNAL_URL", "")
+class Base(AsyncAttrs, DeclarativeBase):
+    pass
+
+class User(Base):
+    __tablename__ = "users"
+    
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    balance: Mapped[int] = mapped_column(Integer, default=1000)
+
 app = FastAPI()
-
-bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
-dp = Dispatcher()
-
-@dp.message(lambda message: message.text == "/start")
-async def cmd_start(message: types.Message):
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🎰 Крутить слоты", callback_data="play_slots")],
-        [InlineKeyboardButton(text="👤 Личный кабинет", callback_data="profile")]
-    ])
-    await message.answer(
-        "✨ <b>Добро пожаловать в Astro Casino</b>\n\n"
-        "Элегантная атмосфера, высокие ставки и чистый азарт. "
-        "Здесь звезды сходятся в твою пользу, а расчет и удача идут рука об руку.\n\n",
-        "👇 Выберите раздел для начала игры:",
-        reply_markup=keyboard
-    )
-
-
 
 @app.on_event("startup")
 async def on_startup():
@@ -56,3 +45,22 @@ async def webhook(request: Request):
 @app.get("/")
 async def root():
     return {"message": "Bot is running"}
+
+# Обработчик команды /start
+@dp.message(types.Command("start"))
+async def cmd_start(message: types.Message):
+    keyboard = types.InlineKeyboardMarkup(
+        inline_keyboard=[
+            [types.InlineKeyboardButton(text="🎰 Играть в слоты", callback_data="play_slots")],
+            [types.InlineKeyboardButton(text="👤 Профиль", callback_data="profile")]
+        ]
+    )
+    
+    await message.answer(
+        "<b>Добро пожаловать в Astro Casino</b>\n\n"
+        "Элегантная атмосфера, высокие ставки и чистый азарт. "
+        "Здесь звезды сходятся в твою пользу, а расчет и удача идут рука об руку.\n\n"
+        "👉 Выберите раздел для начала игры:",
+        reply_markup=keyboard,
+        parse_mode="HTML"
+    )
