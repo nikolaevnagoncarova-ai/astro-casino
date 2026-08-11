@@ -1,6 +1,7 @@
 import os
 from fastapi import FastAPI, Request
 from aiogram import Bot, Dispatcher, types
+from aiogram.filters import Command
 from aiogram.fsm.storage.memory import MemoryStorage
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -47,7 +48,7 @@ async def root():
     return {"message": "Bot is running"}
 
 # Обработчик команды /start
-@dp.message(types.Command("start"))
+@dp.message(Command("start"))
 async def cmd_start(message: types.Message):
     keyboard = types.InlineKeyboardMarkup(
         inline_keyboard=[
